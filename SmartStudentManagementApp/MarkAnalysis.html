@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Marks Analysis</title>
+    <link href="Jquery/bootstrap-5.3.8-dist/css/bootstrap.css" rel="stylesheet">
+    </link>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="header-placeholder"></div>
+
+                <div class="tab-content py-3">
+                 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Jquery/jquery-3.7.1.js"></script>
+    <script src="Jquery/bootstrap-5.3.8-dist/js/bootstrap.js"></script>
+    <script>
+        $("#header-placeholder").load("header.html", function () {
+            $('#aMarkAnalysis').addClass('active');
+        });
+    </script>
+</body>
+
+</html>

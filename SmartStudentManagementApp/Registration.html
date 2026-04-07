@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Students Registration</title>
+    <link href="Jquery/bootstrap-5.3.8-dist/css/bootstrap.css" rel="stylesheet">
+    </link>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mb-3" id="header-placeholder"></div>
+
+                <div class="col-md-12 bd-code-snippet">
+                    <div id="Registration" class="m-3">
+
+                        <form id="myForm" class="needs-validation" novalidate>
+                            <input type="hidden" id="txtStudId" value="0" />
+                            <div class="form-group mb-3">
+                                <label for="txtName">Name</label>
+                                <input type="text" class="form-control" id="txtName" aria-describedby="NameHelp"
+                                    placeholder="Enter Name" required>
+                                <div class="invalid-feedback">Please Enter Name</div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="txtAge">Age</label>
+                                <input type="number" class="form-control" id="txtAge" aria-describedby="AgeHelp"
+                                    placeholder="Enter Age" min="5" max="50" required>
+                                <div class="invalid-feedback">Please Enter Age between 5-50</div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="txtEmail">Email address</label>
+                                <input type="email" class="form-control" id="txtEmail" aria-describedby="EmailHelp"
+                                    placeholder="Enter email" required>
+                                <div class="invalid-feedback">Please Enter Email address</div>
+
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="ddlCourse">Course</label>
+                                <select class="form-select" id="ddlCourse" aria-label="select example" required>
+                                    <option value="">Select Course</option>
+                                    <option value="1">Web Designing</option>
+                                    <option value="2">React Js</option>
+                                    <option value="3">Angular Js</option>
+                                    <option value="4">Python</option>
+                                    <option value="5">Amazon Web Service</option>
+                                </select>
+                                <div class="invalid-feedback">Please select Course</div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="txtTotalMarks">Total Marks</label>
+                                <input type="number" class="form-control" id="txtTotalMarks"
+                                    aria-describedby="TotalMarksHelp" placeholder="Enter TotalMarks" max="100" required>
+                                <div class="invalid-feedback">Please Enter Total Marks</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <button id="btnSubmit" type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+
+                        </form>
+
+                        <!-- Student operation Modal -->
+                        <div class="modal fade" id="studentOpModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="divModalLabel">Success</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="divModalMsg" class="text-success">
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="Jquery/jquery-3.7.1.js"></script>
+        <script src="Jquery/bootstrap-5.3.8-dist/js/bootstrap.js"></script>
+
+        <!-- reference link:- https://github.com/jakearchibald/idb?tab=readme-ov-file#installation -->
+        <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+        <script src="Jquery/StudentCRUD.js"></script>
+
+        <script>
+            let opStatus = '';
+            // Get the modal element
+            var studentOpModal = document.getElementById('studentOpModal');
+
+            // Listen for the 'show.bs.modal' event
+            studentOpModal.addEventListener('show.bs.modal', function (event) {
+                document.getElementById('divModalMsg').textContent = 'Student ' + opStatus + ' successfully.';
+            });
+
+            // Listen for the 'hidden.bs.modal' event
+            studentOpModal.addEventListener('hidden.bs.modal', function (event) {
+                window.location = 'Dashboard.html';
+            });
+
+            //Load header tab.
+            $("#header-placeholder").load("header.html", function () {
+                $('#aRegistration').addClass('active');
+            });
+
+            //class declaration.
+            class Student {
+                constructor(Name, Age, Email, Course, TotalMarks) {
+                    this.Name = Name;
+                    this.Age = Age;
+                    this.Email = Email;
+                    this.Course = Course;
+                    this.TotalMarks = TotalMarks;
+                }
+            }
+
+            //JavaScript for disabling form submissions if there are invalid fields
+            (() => {
+                const myForm = document.getElementById('myForm');
+                myForm.addEventListener('submit', event => {
+                    event.preventDefault();
+
+                    if (!myForm.checkValidity()) {
+                        event.stopPropagation()
+                    }
+                    else {
+                        //Valid form so insert student data. Create Student class object:-
+                        const stud = new Student($('#txtName').val(), $('#txtAge').val(), $('#txtEmail').val(), $('#ddlCourse').val(),
+                            parseInt($('#txtTotalMarks').val()));
+                       
+                        if (QS_studId == '')
+                            createStudent(stud)
+                        else {
+                            stud.id = parseInt($('#txtStudId').val());
+                            updateStudent(stud);
+                        }
+                    }
+                    myForm.classList.add('was-validated')
+                }, false)
+            })()
+
+            var QS_studId = '';
+            $(document).ready(function () {
+                //Check for querystring value. If StudentId exists then its an Edit operation.
+                const urlParams = new URLSearchParams(window.location.search);
+
+                if (urlParams.size > 0) {
+                    QS_studId = urlParams.get('id');
+                    if (QS_studId != "") {
+                        $('#txtStudId').val(QS_studId);
+
+                        readStudent(parseInt(QS_studId))
+                            .then(studentData => {
+                                if (studentData != '' && studentData != undefined) {
+                                    $('#txtName').val(studentData.Name);
+                                    $('#txtAge').val(studentData.Age);
+                                    $('#txtEmail').val(studentData.Email);
+                                    $('#ddlCourse').val(studentData.Course);
+                                    $('#txtTotalMarks').val(studentData.TotalMarks);
+                                    $('#btnSubmit').text('Update');
+                                }
+                            })
+                            .catch(error => {
+                                alert('Error: ' + error);
+                            });
+                    }
+                }
+            });
+
+        </script>
+</body>
+
+</html>

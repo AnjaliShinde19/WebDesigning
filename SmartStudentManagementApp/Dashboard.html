@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Students Dashboard</title>
+    <link href="Jquery/bootstrap-5.3.8-dist/css/bootstrap.css" rel="stylesheet">
+    </link>
+    <style>
+        .highLightLow td {
+            background-color: yellow;
+        }
+
+        #divRadioBtns {
+            margin: auto;
+            text-align: right;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="header-placeholder"></div>
+
+                <div class="tab-content py-3">
+
+                    <div id="divAlert" style="display: none;" class="alert alert-danger alert-dismissible fade show"
+                        role="alert">
+                        <strong>Student Deleted successfully.</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <div id="Dashboard">
+                        <h4>Students List</h4>
+
+                        <div id="divRadioBtns">
+                            <span class="text-success">Filter By: </span>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input rdoStudFilter" type="radio" name="rdoPassFail"
+                                    id="rdoPass" value="pass">
+                                <label class="form-check-label" for="rdoPass">Pass</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input rdoStudFilter" type="radio" name="rdoPassFail"
+                                    id="rdoFail" value="fail">
+                                <label class="form-check-label" for="rdoFail">Fail</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input rdoStudFilter" type="radio" name="rdoPassFail"
+                                    id="rdoAll" value="all">
+                                <label class="form-check-label" for="rdoAll">All</label>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table id="tblStudentList" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Age</th>
+                                        <th scope="col">Email Address</th>
+                                        <th scope="col">Course</th>
+                                        <th scope="col">Total Marks
+                                            <div data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="Sort by Ascending" style="display: inline;"
+                                                onclick="SortData('asc');">
+                                                <svg id="UpArrow" xmlns="http://www.w3.org/2000/svg" width="16"
+                                                    height="16" fill="currentColor" class="bi bi-caret-up-fill"
+                                                    viewBox="0 0 16 16">
+                                                    <path
+                                                        d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                </svg>
+                                            </div>
+                                            <div data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="Sort by Descending" style="display: inline;"
+                                                onclick="SortData('desc');">
+                                                <svg id="DownArrow" xmlns="http://www.w3.org/2000/svg" width="16"
+                                                    height="16" tooltip="Desending Sort" fill="currentColor"
+                                                    class="bi bi-caret-down-fill" viewBox="0 0 16 16">
+                                                    <path
+                                                        d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                </svg>
+                                            </div>
+
+                                        </th>
+                                        <th colspan="2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalDeleteConfirm" class="modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Confirmation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure want to delete this Records?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnModalYes" class="btn btn-primary">Yes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Jquery/jquery-3.7.1.js"></script>
+    <script src="Jquery/bootstrap-5.3.8-dist/js/bootstrap.js"></script>
+    <!-- reference link:- https://github.com/jakearchibald/idb?tab=readme-ov-file#installation -->
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+    <script src="Jquery/StudentCRUD.js"></script>
+
+    <script>
+        $(function () {
+            $("#header-placeholder").load("header.html", function () {
+                $('#aDashboard').addClass('active');
+            });
+
+            $(".rdoStudFilter").change(function () {
+                var selectedValue = $('input[name="rdoPassFail"]:checked').val();
+                if (selectedValue == "pass") {
+                    filterByTotalMarks(35, 100)
+                        .then(studentlist => {
+                            BuildStudentTable(studentlist);
+                        })
+                        .catch(error => { alert('Error: ' + error); });
+                }
+                else if (selectedValue == "fail") {
+                    filterByTotalMarks(0, 34)
+                        .then(studentlist => {
+                            BuildStudentTable(studentlist);
+                        })
+                        .catch(error => { alert('Error: ' + error); });
+                }
+                else
+                    LoadStudentData();
+            });
+
+            // Get the modal element
+            var modalDeleteConfirm = document.getElementById('modalDeleteConfirm');
+            // Listen for the 'hidden.bs.modal' event
+            modalDeleteConfirm.addEventListener('hidden.bs.modal', function (event) {
+                $('#btnModalYes').removeAttr('onclick');
+            });
+
+            LoadStudentData();
+        });
+
+        function LoadStudentData() {
+            readAllStudents()
+                .then(studentlist => {
+                    BuildStudentTable(studentlist);
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                });
+        }
+
+        function BuildStudentTable(studentlist) {
+            //Get Students list.
+            var tblStud = '';
+            $('#tblStudentList tbody').html('');
+
+            if (studentlist != '' && studentlist.length > 0) {
+                studentlist.forEach(stud => {
+                    let courseName = '';
+                    if (stud.Course == 1)
+                        courseName = 'Web Designing';
+                    else if (stud.Course == 2)
+                        courseName = 'React Js';
+                    else if (stud.Course == 3)
+                        courseName = 'Angular Js';
+                    else if (stud.Course == 4)
+                        courseName = 'Python';
+                    else if (stud.Course == 5)
+                        courseName = 'Amazon Web Service';
+
+                    tblStud += `<tr class=${stud.TotalMarks < 35 ? "highLightLow" : ""}><td>${stud.id}</td> <td>${stud.Name}</td> <td>${stud.Age}</td> <td>${stud.Email}</td> 
+                                <td>${courseName}</td> <td>${stud.TotalMarks}</td>
+                                <td><button class="btn btn-primary" onclick="EditStudent(${stud.id});">Edit</button></td>
+                                <td><button class="btn btn-danger" onclick="DeleteStudent(${stud.id});">Delete</button></td>
+                                </tr>`;
+                });
+                $('#tblStudentList tbody').html(tblStud);
+            }
+            else {
+                $('#tblStudentList tbody').html('<tr><td colspan="8">No Records found.</td></tr>');
+            }
+
+        }
+
+        //Sort Student table data.
+        function SortData(orderByText) {
+            if (orderByText == 'asc') //by Ascending
+            {
+                $('#UpArrow').css('color', 'red');
+                $('#DownArrow').css('color', '');
+
+                getStudentsAscending()
+                    .then(studentlist => {
+                        BuildStudentTable(studentlist);
+                    })
+                    .catch(error => {
+                        alert('Error: ' + error);
+                    });
+            }
+            else  //by Descending
+            {
+                $('#DownArrow').css('color', 'red');
+                $('#UpArrow').css('color', '');
+
+                getStudentsDescending()
+                    .then(studentlist => {
+                        BuildStudentTable(studentlist);
+                    })
+                    .catch(error => {
+                        alert('Error: ' + error);
+                    });
+            }
+        }
+
+        //Edit student.
+        function EditStudent(studId) {
+            window.location = "Registration.html?id=" + studId;
+        }
+
+        //Delete student.
+        function DeleteStudent(studId) {
+            $('#btnModalYes').attr('onclick', 'deleteStudentRecord(' + studId + ');');
+            $('#modalDeleteConfirm').modal('show');
+        }
+
+        function deleteStudentRecord(studId) {
+            result = deleteStudent(studId);
+            if (result != 0) {
+                $("#divAlert").css('display', '');
+                LoadStudentData();
+                $('#modalDeleteConfirm').modal('hide');
+            }
+        }
+
+    </script>
+</body>
+
+</html>
